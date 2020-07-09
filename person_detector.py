@@ -2,12 +2,13 @@ import numpy as np
 from object_detection.utils import ops as utils_ops
 import tensorflow as tf
 from PIL import Image
+# tf.disable_v2_behavior() 
 
 PERSON_CLASS = 1
 SCORE_THRESHOLD = 0.5
 
 def run_inference_for_single_image(image, sess):
-    ops = tf.get_default_graph().get_operations()
+    ops = tf.compat.v1.get_default_graph().get_operations()
     all_tensor_names = {output.name for op in ops for output in op.outputs}
     tensor_dict = {}
     for key in [
@@ -16,7 +17,7 @@ def run_inference_for_single_image(image, sess):
     ]:
         tensor_name = key + ':0'
         if tensor_name in all_tensor_names:
-            tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(
+            tensor_dict[key] = tf.compat.v1.get_default_graph().get_tensor_by_name(
                 tensor_name)
     if 'detection_masks' in tensor_dict:
         # The following processing is only for single image
@@ -33,7 +34,7 @@ def run_inference_for_single_image(image, sess):
         # Follow the convention by adding back the batch dimension
         tensor_dict['detection_masks'] = tf.expand_dims(
             detection_masks_reframed, 0)
-    image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
+    image_tensor = tf.compat.v1.get_default_graph().get_tensor_by_name('image_tensor:0')
 
     # Run inference
     output_dict = sess.run(tensor_dict,
@@ -53,8 +54,8 @@ def run_inference_for_single_image(image, sess):
 def open_graph():
     detection_graph = tf.Graph()
     with detection_graph.as_default():
-        od_graph_def = tf.GraphDef()
-        with tf.gfile.GFile('ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb', 'rb') as fid:
+        od_graph_def = tf.compat.v1.GraphDef()
+        with tf.io.gfile.GFile('ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb', 'rb') as fid:
             serialized_graph = fid.read()
             od_graph_def.ParseFromString(serialized_graph)
             tf.import_graph_def(od_graph_def, name='')

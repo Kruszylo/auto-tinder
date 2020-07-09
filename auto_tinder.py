@@ -7,6 +7,25 @@ from likeliness_classifier import Classifier
 import person_detector
 import tensorflow as tf
 from time import time
+import logging
+import json
+
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename=f'logs/{time()}',
+                    filemode='w')
+
+# define a new Handler to log to console as well
+console = logging.StreamHandler()
+# optional, set the logging level
+console.setLevel(logging.INFO)
+# set a format which is the same for console use
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# tell the handler to use this format
+console.setFormatter(formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
 
 TINDER_URL = "https://api.gotinder.com"
 geolocator = Nominatim(user_agent="auto-tinder")
@@ -27,6 +46,13 @@ class tinderAPI():
 
     def like(self, user_id):
         data = requests.get(TINDER_URL + f"/like/{user_id}", headers={"X-Auth-Token": self._token}).json()
+        return {
+            "is_match": data["match"],
+            "liked_remaining": data["likes_remaining"]
+        }
+
+    def superlike(self, user_id):
+        data = requests.get(TINDER_URL + f"/like/{user_id}/super", headers={"X-Auth-Token": self._token}).json()
         return {
             "is_match": data["match"],
             "liked_remaining": data["likes_remaining"]
@@ -72,6 +98,9 @@ class Person(object):
 
     def like(self):
         return self._api.like(self.id)
+
+    def superlike(self):
+        return self._api.superlike(self.id)
 
     def dislike(self):
         return self._api.dislike(self.id)
@@ -132,20 +161,22 @@ class Profile(Person):
 
 
 if __name__ == "__main__":
-    token = "YOUR-API-TOKEN"
+    token = "a4f03f05-6795-4b08-9e20-b18cb0acbcf3"
     api = tinderAPI(token)
 
     detection_graph = person_detector.open_graph()
     with detection_graph.as_default():
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
 
             classifier = Classifier(graph="./tf/training_output/retrained_graph.pb",
+                                    model_path="./train-results/MobileNetV2-person-classifier.h5",
                                     labels="./tf/training_output/retrained_labels.txt")
 
-            end_time = 1568992917 + 60*60*2.8
+            end_time = time() + 60*60*2.8
             while time() < end_time:
                 try:
-                    print(f"------ TIME LEFT: {(end_time - time())/60} min -----")
+                    logging.info(f"------ TIME LEFT: {(end_time - time())/60} min -----")
+
                     persons = api.nearby_persons()
                     pos_schools = ["Universität Zürich", "University of Zurich", "UZH", "HWZ Hochschule für Wirtschaft Zürich",
                                    "ETH Zürich", "ETH Zurich", "ETH", "ETHZ", "Hochschule Luzern", "HSLU", "ZHAW",
@@ -157,24 +188,29 @@ if __name__ == "__main__":
 
                         for school in pos_schools:
                             if school in person.schools:
-                                print()
+                                logging.info("")
                                 score *= 1.2
 
-                        print("-------------------------")
-                        print("ID: ", person.id)
-                        print("Name: ", person.name)
-                        print("Schools: ", person.schools)
-                        print("Images: ", person.images)
-                        print(score)
+                        logging.info("-------------------------")
+                        logging.info(f"ID: {person.id}")
+                        logging.info(f"Name: {person.name}")
+                        logging.info(f"BIO: {person.bio}")
+                        logging.info(f"Schools: {person.schools}")
+                        logging.info(f"Images: {person.images}")
+                        logging.info(score)
 
-                        if score > 0.8:
+                        if score > 0.81:
+                            res = person.superlike()
+                            logging.info("SUPER LIKE")
+                            logging.info(f"Response: {res}")
+                        elif score > 0.69:
                             res = person.like()
-                            print("LIKE")
-                            print("Response: ", res)
+                            logging.info("LIKE")
+                            logging.info(f"Response: {res}")
                         else:
                             res = person.dislike()
-                            print("DISLIKE")
-                            print("Response: ", res)
+                            logging.info("DISLIKE")
+                            logging.info(f"Response: {res}")
                 except Exception:
                     pass
 

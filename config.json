@@ -1,0 +1,15 @@
+{
+    "personClassifierServer": {
+        "comment": "Configuration for person_classifier_server.py.",
+        "savedModel": "./train-results/InceptionResNetV2/1",
+        "modelInputSize": [224, 224, 3],
+        "preprocessor": "tf.keras.applications.inception_resnet_v2.preprocess_input",
+        "labelMap": [
+            "positive",
+            "megative"
+        ],
+        "minProba": 0.8,
+        "zerorpcHeartBeat": 60000,
+        "zerorpcPipe": "ipc:///tmp/face_detect_zmq.pipe"
+    }
+}

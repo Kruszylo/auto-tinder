@@ -22,7 +22,7 @@ if __name__ == "__main__":
     lovoo_images = [f for f in os.listdir(LOVOO_FOLDER) if os.path.isfile(os.path.join(LOVOO_FOLDER, f))]
 
     with detection_graph.as_default():
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
 
             for pos in lovoo_images:
                 old_filename = LOVOO_FOLDER + "/" + pos
@@ -37,26 +37,32 @@ if __name__ == "__main__":
                     img.save(new_filename, "jpeg")
 
 
-            for pos in positive_images:
+            for i, pos in enumerate(positive_images):
                 old_filename = IMAGE_FOLDER + "/" + pos
                 new_filename = POS_FOLDER + "/" + pos[:-5] + ".jpg"
 
                 if not os.path.isfile(new_filename):
-                    print(">> Moving positive image: " + pos)
-                    img = person_detector.get_person(old_filename, sess)
-                    if not img:
-                        continue
-                    img = img.convert('L')
-                    img.save(new_filename, "jpeg")
+                    print(f">> {i}/{len(positive_images)} Moving positive image: {pos}")
+                    try:
+                        img = person_detector.get_person(old_filename, sess)
+                        if not img:
+                            continue
+                        img = img.convert('L')
+                        img.save(new_filename, "jpeg")
+                    except Exception as ex:
+                        print(f'>> Failed! Error: {ex}')
 
 
-            for neg in negative_images:
+            for i, neg in enumerate(negative_images):
                 old_filename = IMAGE_FOLDER + "/" + neg
                 new_filename = NEG_FOLDER + "/" + neg[:-5] + ".jpg"
                 if not os.path.isfile(new_filename):
-                    print(">> Moving negative image: " + neg)
-                    img = person_detector.get_person(old_filename, sess)
-                    if not img:
-                        continue
-                    img = img.convert('L')
-                    img.save(new_filename, "jpeg")
+                    print(f">> {i}/{negative_images} Moving negative image: {neg}")
+                    try:
+                        img = person_detector.get_person(old_filename, sess)
+                        if not img:
+                            continue
+                        img = img.convert('L')
+                        img.save(new_filename, "jpeg")
+                    except Exception as ex:
+                        print(f'>> Failed! Error: {ex}')

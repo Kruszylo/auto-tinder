@@ -1,0 +1,12 @@
+2020-07-06 02:33:37,672 - WARNING - From /home/maksym.titov/auto-tinder/env/lib/python3.8/site-packages/tensorflow/python/ops/resource_variable_ops.py:1659: calling BaseResourceVariable.__init__ (from tensorflow.python.ops.resource_variable_ops) with constraint is deprecated and will be removed in a future version.
+Instructions for updating:
+If using Keras pass *_constraint arguments to layers.
+2020-07-06 02:33:44,714 - INFO - ------ TIME LEFT: 167.99999995231627 min -----
+2020-07-06 02:33:49,150 - INFO - ------ TIME LEFT: 167.9260644555092 min -----
+2020-07-06 02:33:56,551 - INFO - -------------------------
+2020-07-06 02:33:56,554 - INFO - 0.48177124857902526
+2020-07-06 02:33:56,738 - INFO - DISLIKE
+2020-07-06 02:33:57,983 - INFO - ------ TIME LEFT: 167.77883884509404 min -----
+2020-07-06 02:34:12,429 - INFO - -------------------------
+2020-07-06 02:34:12,431 - INFO - 0.49297254979610444
+2020-07-06 02:34:12,629 - INFO - DISLIKE
